@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Investment Bot</title>
+  </head>
+  <body>
+    <h1>Stock Investment Bot</h1>
+    <form id="inputForm">
+      <label for="userInput">Enter your message:</label>
+      <input type="text" id="userInput" name="userInput" required />
+      <button type="submit">Submit</button>
+    </form>
+    <h2>Response:</h2>
+    <pre id="response"></pre>
+
+    <script>
+      document
+        .getElementById("inputForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const userInput = document.getElementById("userInput").value;
+          const responseElement = document.getElementById("response");
+
+          const requestData = {
+            messages: [
+              {
+                role: "system",
+                content:
+                  '너는 주식투자 다이렉트 인덱싱 서비스를 도와주는 봇이야 \r\n\r\n\r\n- 사용자의 질문은 총 4번.\r\n-  최대한 투자에 대해 사용자가 중요하게 생각하는 것들을 얘기할 수 있게 유도해야 돼\r\n- 첫 번째 어시스턴트 대답은 반드시 "주식 투자에서 회사(종목)을 선택할 때 중요하게 생각하는 요소가 있나요?". 이런 뉘양스로 끝내야 해\r\n- 네번째 어시스턴트 대답은 반드시 "알겠습니다! 대화를 바탕으로 인덱싱을 실시할게요 조금만 기다려주세요". 이런 뉘양스로 끝내야 해\r\n- 최대한 예의 바르게 답변해줘\r\n- 대답은 3문장이상 4문장은 넘어가지마\r\n- 대답은 항상 사용자가 했던 말은 한번 짚고 대답해줘',
+              },
+              { role: "user", content: userInput },
+            ],
+            topP: 0.8,
+            topK: 0,
+            maxTokens: 256,
+            temperature: 0.5,
+            repeatPenalty: 5.0,
+            stopBefore: [],
+            includeAiFilters: true,
+            seed: 0,
+          };
+
+          try {
+            //백 url
+            const response = await fetch(
+              "http://localhost:8000/execute_completion",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              }
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              responseElement.textContent = JSON.stringify(data, null, 2);
+            } else {
+              responseElement.textContent = `Error: ${response.statusText}`;
+            }
+          } catch (error) {
+            responseElement.textContent = `Error: ${error.message}`;
+          }
+        });
+    </script>
+  </body>
+</html>
